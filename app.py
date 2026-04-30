@@ -662,3 +662,185 @@ with st.expander("📊 Ver detalles de entrenamiento y evaluación", expanded=Tr
 
 st.markdown("---")
 st.caption("✅ Parte 5 completada: Entrenamiento, evaluación y análisis de limitaciones en contexto electoral")
+
+
+# ============================================
+# PARTE 7: COMPUTACIÓN CUÁNTICA APLICADA
+# ============================================
+
+st.markdown("---")
+st.header("🌌 PARTE 7: Computación Cuántica aplicada a datos electorales")
+st.markdown("---")
+
+with st.expander("🔬 Ver análisis de Computación Cuántica", expanded=True):
+    
+    st.subheader("📚 7.1 Conceptos fundamentales")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("""
+        ### 🔷 Qubits (Quantum Bits)
+        
+        **Definición:**  
+        Unidad básica de información cuántica.
+        
+        **Diferencia con bits clásicos:**
+        - Bit clásico: 0 o 1 (solo un estado)
+        - Qubit: puede ser 0, 1 o **ambos al mismo tiempo**
+        
+        **Representación:**  
+        `|ψ⟩ = α|0⟩ + β|1⟩` donde α² + β² = 1
+        
+        **Analogía electoral:**  
+        Un qubit es como un elector indeciso que aún no ha decidido su voto, está en superposición de apoyar a múltiples candidatos simultáneamente.
+        """)
+    
+    with col2:
+        st.markdown("""
+        ### 🔄 Superposición
+        
+        **Definición:**  
+        Capacidad de un sistema cuántico de estar en múltiples estados simultáneamente.
+        
+        **Ejemplo práctico:**  
+        Un qubit puede representar **todos los votos posibles** a la vez.
+        
+        **Ventaja:**  
+        Con n qubits se pueden representar 2ⁿ estados simultáneamente.
+        
+        **Analogía electoral:**  
+        Una encuesta cuántica podría analizar todas las combinaciones de votos posibles en una mesa, en lugar de una por una.
+        """)
+    
+    with col3:
+        st.markdown("""
+        ### ⚡ Paralelismo Cuántico
+        
+        **Definición:**  
+        Capacidad de realizar múltiples operaciones simultáneamente gracias a la superposición.
+        
+        **Ejemplo:**  
+        Un algoritmo cuántico puede evaluar todas las soluciones a la vez.
+        
+        **Ventaja sobre clásico:**  
+        - Clásico: procesa 1 resultado por vez
+        - Cuántico: procesa 2ⁿ resultados simultáneamente
+        
+        **Analogía electoral:**  
+        Como contar votos en todas las mesas del país **al mismo tiempo** en lugar de una por una.
+        """)
+    
+    st.markdown("---")
+    
+    # 7.2 Potencial aplicación en análisis masivo de datos electorales
+    st.subheader("🎯 7.2 Potencial aplicación en análisis electoral masivo")
+    
+    st.markdown("""
+    ### 📊 Aplicaciones concretas para la ONPE:
+    
+    | Aplicación | Problema actual | Solución cuántica | Impacto |
+    |------------|----------------|-------------------|---------|
+    | **Conteo rápido** | Procesar 100k+ actas toma horas | Algoritmo de búsqueda cuántica (Grover) | Resultados en minutos |
+    | **Detección de anomalías** | Identificar mesas sospechosas requiere análisis lento | Superposición para evaluar patrones simultáneos | Detección en tiempo real |
+    | **Optimización de rutas** | Logística de traslado de actas | Algoritmo cuántico de optimización (QAOA) | Reducción de costos |
+    | **Simulación electoral** | Modelar escenarios requiere mucho cómputo | Simulación de múltiples escenarios a la vez | Pronósticos más precisos |
+    | **Cribado de datos** | Filtrar votos inválidos es secuencial | Búsqueda cuántica paralela | Limpieza 100x más rápida |
+    """)
+    
+    st.subheader("🔬 Algoritmos cuánticos aplicables")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        ### Algoritmo de Grover (Búsqueda)
+        
+        **Problema que resuelve:**  
+        Encontrar un elemento específico en una base de datos no ordenada.
+        
+        **Aplicación electoral:**  
+        Buscar mesas con patrones anómalos de votación.
+        
+        **Ventaja cuántica:**  
+        - Clásico: O(N) operaciones
+        - Cuántico: O(√N) operaciones
+        
+        **Ejemplo concreto:**  
+        Entre 100,000 mesas, encontrar las 100 con irregularidades:
+        - Clásico: hasta 100,000 verificaciones
+        - Cuántico: solo ~316 verificaciones
+        """)
+    
+    with col2:
+        st.markdown("""
+        ### QAOA (Quantum Approximate Optimization)
+        
+        **Problema que resuelve:**  
+        Optimización combinatoria (problemas de asignación).
+        
+        **Aplicación electoral:**  
+        Asignación óptima de centros de cómputo y rutas de fiscalización.
+        
+        **Ventaja cuántica:**  
+        Encuentra soluciones casi óptimas exponencialmente más rápido.
+        
+        **Ejemplo concreto:**  
+        Optimizar la distribución de 5000 centros de votación para minimizar tiempos de desplazamiento en 25 regiones.
+        """)
+    
+    st.subheader("⚠️ Limitaciones actuales de la computación cuántica")
+    
+    st.markdown("""
+    ### 🚧 Desafíos para implementación en ONPE:
+    
+    1. **Hardware limitado**
+       - Computadoras cuánticas actuales tienen pocos qubits (50-100)
+       - Para datos electorales reales se necesitarían miles de qubits
+    
+    2. **Decoherencia cuántica**
+       - Los estados cuánticos son extremadamente frágiles
+       - Ruido ambiental destruye la superposición en milisegundos
+    
+    3. **Curva de aprendizaje**
+       - Programación cuántica requiere nuevos paradigmas
+       - Personal especializado es escaso y costoso
+    
+    4. **Costo**
+       - Computadoras cuánticas industriales: millones de dólares
+       - Alternativa: simuladores cuánticos en la nube (menos potentes)
+    
+    ### 🔮 Estado actual y futuro cercano:
+    
+    - **Hoy:** Simuladores cuánticos para investigación
+    - **2-5 años:** Computadoras cuánticas de 1000+ qubits
+    - **5-10 años:** Posible implementación en gobierno electrónico
+    
+    ### ✅ Recomendación para la ONPE:
+    
+    """ + """
+    > **Invertir en formación y experimentación**  
+    > Comenzar con simuladores cuánticos (IBM Quantum, Amazon Braket)  
+    > Desarrollar prototipos para problemas específicos (optimización logística)  
+    > Participar en programas piloto de computación cuántica gubernamental
+    """)
+    
+    st.subheader("📊 Comparación: Clásico vs Cuántico para análisis electoral")
+    
+    comparacion_data = {
+        "Métrica": ["Tiempo de conteo (100k mesas)", "Detección de anomalías", "Optimización de rutas", "Simulación de escenarios"],
+        "Computación Clásica": ["~4-6 horas", "Secuencial, horas", "NP-difícil, días", "Uno por vez"],
+        "Computación Cuántica": ["~5-10 minutos", "Paralelo, minutos", "Casi óptimo, minutos", "Miles simultáneos"],
+        "Madurez actual": ["✓ Producción", "✓ Producción", "⚠️ Investigación", "⚠️ Prototipo"]
+    }
+    
+    df_comparacion = pd.DataFrame(comparacion_data)
+    st.dataframe(df_comparacion, use_container_width=True, hide_index=True)
+    
+    st.caption("""
+    **Fuente:** Análisis prospectivo basado en literatura científica actual.
+    **Nota:** La computación cuántica aún está en fase experimental para aplicaciones electorales.
+    """)
+
+st.markdown("---")
+st.caption("🌌 Parte 7 completada: Fundamentos de computación cuántica aplicada a datos electorales")
