@@ -374,3 +374,251 @@ if len(df_ml) > 0:
         st.success("✅ Balance adecuado entre entrenamiento y prueba")
 else:
     st.warning("No hay suficientes datos para entrenar el modelo")
+
+
+
+# ============================================
+# PARTE 5: ENTRENAMIENTO Y EVALUACIÓN
+# ============================================
+
+st.markdown("---")
+st.header("🎯 PARTE 5: Entrenamiento y Evaluación del Modelo")
+st.markdown("---")
+
+with st.expander("📊 Ver detalles de entrenamiento y evaluación", expanded=True):
+    
+    # 5.1 Dividir dataset en entrenamiento y prueba
+    st.subheader("📌 5.1 División del Dataset")
+    
+    # Preparar datos para el modelo
+    # Usar características: votos por candidato + electores hábiles
+    columnas_caracteristicas = [f'VOTOS_P{i}' for i in range(1, 21)] + ['N_ELEC_HABIL']
+    
+    # Crear variable objetivo: tendencia de voto (candidato más votado)
+    def get_tendencia(fila):
+        votos_candidatos = [fila[f'VOTOS_P{i}'] for i in range(1, 21)]
+        if sum(votos_candidatos) == 0:
+            return -1  # Sin votos válidos
+        # Retorna el índice del candidato con más votos (0-19)
+        return votos_candidatos.index(max(votos_candidatos))
+    
+    df['tendencia'] = df.apply(get_tendencia, axis=1)
+    
+    # Filtrar mesas con tendencia definida
+    df_modelo = df[df['tendencia'] >= 0].copy()
+    
+    if len(df_modelo) > 100:  # Suficientes datos para entrenar
+        # Características (X)
+        X = df_modelo[columnas_caracteristicas].copy()
+        
+        # Variable objetivo (y)
+        y = df_modelo['tendencia'].copy()
+        
+        # Mostrar información del dataset
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("📊 Total de registros", len(df_modelo))
+            st.metric("🎯 Clases objetivo", y.nunique())
+        with col2:
+            st.metric("🔢 Características", len(columnas_caracteristicas))
+            st.metric("📈 Rango de votos por mesa", f"{X.iloc[:, :20].sum(axis=1).min():.0f} - {X.iloc[:, :20].sum(axis=1).max():.0f}")
+        
+        # División en entrenamiento (70%) y prueba (30%)
+        from sklearn.model_selection import train_test_split
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.3, random_state=42, stratify=y
+        )
+        
+        st.success(f"✅ Dataset dividido correctamente:")
+        st.write(f"- **Entrenamiento:** {len(X_train)} mesas (70%)")
+        st.write(f"- **Prueba:** {len(X_test)} mesas (30%)")
+        
+        # 5.2 Entrenar un modelo básico
+        st.subheader("🤖 5.2 Entrenamiento del Modelo")
+        
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.tree import DecisionTreeClassifier
+        
+        # Usar Random Forest como modelo básico
+        modelo = RandomForestClassifier(
+            n_estimators=50,  # Número de árboles
+            max_depth=10,     # Profundidad máxima
+            min_samples_split=5,
+            random_state=42,
+            n_jobs=-1
+        )
+        
+        # Entrenar
+        with st.spinner("Entrenando modelo..."):
+            modelo.fit(X_train, y_train)
+        
+        st.success("✅ Modelo Random Forest entrenado correctamente")
+        
+        # Mostrar características del modelo
+        st.write("**Parámetros del modelo:**")
+        st.code("""
+        RandomForestClassifier(
+            n_estimators=50,      # 50 árboles de decisión
+            max_depth=10,         # Profundidad máxima del árbol
+            min_samples_split=5,  # Mínimo de muestras para dividir
+            random_state=42       # Semilla para reproducibilidad
+        )
+        """)
+        
+        # 5.3 Evaluar resultados
+        st.subheader("📈 5.3 Evaluación del Modelo")
+        
+        # Predicciones
+        y_train_pred = modelo.predict(X_train)
+        y_test_pred = modelo.predict(X_test)
+        
+        # Calcular métricas
+        from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+        
+        train_accuracy = accuracy_score(y_train, y_train_pred)
+        test_accuracy = accuracy_score(y_test, y_test_pred)
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("🎯 Precisión en Entrenamiento", f"{train_accuracy:.2%}")
+        with col2:
+            st.metric("🎯 Precisión en Prueba", f"{test_accuracy:.2%}")
+        with col3:
+            diferencia = abs(train_accuracy - test_accuracy)
+            st.metric("📊 Diferencia", f"{diferencia:.2%}", 
+                     delta="mayor diferencia" if diferencia > 0.15 else "aceptable")
+        
+        # 5.4 Identificar sobreajuste o subajuste
+        st.subheader("🔍 5.4 Análisis de Sobreajuste y Subajuste")
+        
+        if train_accuracy > 0.95 and test_accuracy < 0.70:
+            st.warning("⚠️ **SOBREAJUSTE (Overfitting) Detectado**")
+            st.markdown("""
+            **Indicadores:**
+            - ✅ Alta precisión en entrenamiento (>95%)
+            - ❌ Baja precisión en prueba (<70%)
+            
+            **Explicación:**  
+            El modelo ha memorizado los patrones específicos de los datos de entrenamiento, 
+            pero no logra generalizar a nuevos datos. Esto ocurre cuando el modelo es 
+            demasiado complejo para la cantidad de datos disponibles.
+            
+            **Causas probables:**
+            - El modelo es demasiado complejo (50 árboles, profundidad 10)
+            - Datos de entrenamiento insuficientes
+            - Existen características irrelevantes en los datos
+            """)
+        
+        elif train_accuracy < 0.60 and test_accuracy < 0.60:
+            st.warning("⚠️ **SUBAJUSTE (Underfitting) Detectado**")
+            st.markdown("""
+            **Indicadores:**
+            - ❌ Baja precisión en entrenamiento (<60%)
+            - ❌ Baja precisión en prueba (<60%)
+            
+            **Explicación:**  
+            El modelo es demasiado simple para capturar la complejidad de los datos 
+            electorales. No está aprendiendo los patrones subyacentes.
+            
+            **Causas probables:**
+            - Modelo demasiado simple (pocos árboles, poca profundidad)
+            - Faltan características relevantes (como factores socioeconómicos)
+            - Los datos tienen mucho ruido o son insuficientes
+            """)
+        
+        elif train_accuracy > 0.90 and test_accuracy > 0.80:
+            st.success("✅ **MODELO BALANCEADO**")
+            st.markdown("""
+            **Indicadores:**
+            - ✅ Buena precisión en entrenamiento (>90%)
+            - ✅ Buena precisión en prueba (>80%)
+            
+            **Explicación:**  
+            El modelo ha aprendido los patrones generales sin memorizar ruido específico. 
+            Es capaz de generalizar correctamente a nuevos datos.
+            """)
+        
+        else:
+            st.info("📊 **MODELO ACEPTABLE**")
+            st.markdown(f"""
+            **Resultados obtenidos:**
+            - Precisión entrenamiento: {train_accuracy:.2%}
+            - Precisión prueba: {test_accuracy:.2%}
+            
+            El modelo muestra un rendimiento aceptable, aunque podría mejorarse 
+            ajustando hiperparámetros o añadiendo más características relevantes.
+            """)
+        
+        # Mostrar matriz de confusión (simplificada)
+        st.write("**Matriz de Confusión (primeras 5 clases):**")
+        cm = confusion_matrix(y_test, y_test_pred)
+        st.write(f"Dimensión de la matriz: {cm.shape[0]}x{cm.shape[0]} (clases de candidatos)")
+        
+        # 5.5 Explicar limitaciones del modelo en contexto electoral
+        st.subheader("⚠️ 5.5 Limitaciones del Modelo en Contexto Electoral")
+        
+        st.markdown("""
+        ### 🔴 Limitaciones identificadas:
+        
+        **1. Datos limitados a una sola elección**
+        - El modelo solo conoce patrones de 2006
+        - No puede predecir cambios en comportamiento electoral
+        
+        **2. Falta de variables contextuales**
+        - No incluye factores socioeconómicos
+        - No considera coyuntura política
+        - No incorpora tendencias históricas
+        
+        **3. Sesgo geográfico**
+        - Los patrones aprendidos son específicos de ciertas regiones
+        - Puede no generalizar a todo el país uniformemente
+        
+        **4. Simplicidad del modelo**
+        - No captura interacciones complejas entre candidatos
+        - Asume independencia entre mesas (falso en realidad)
+        
+        **5. Datos históricos no predicen futuro**
+        - Las elecciones tienen dinámicas únicas
+        - Modelos predictivos electorales tienen alto margen de error
+        
+        ### 📌 Recomendaciones para mejorar:
+        
+        - ✅ Incorporar datos de múltiples elecciones (2006, 2011, 2016, 2021)
+        - ✅ Agregar variables demográficas por distrito
+        - ✅ Considerar series temporales para análisis de tendencias
+        - ✅ Validar con expertos en ciencia política
+        - ✅ Usar modelos más robustos (XGBoost, redes neuronales)
+        - ✅ Implementar validación cruzada por regiones
+        """)
+        
+        # Mostrar importancia de características (top 10)
+        if hasattr(modelo, 'feature_importances_'):
+            st.subheader("📊 Importancia de Características")
+            importancias = modelo.feature_importances_
+            features_nombres = columnas_caracteristicas
+            
+            # Crear DataFrame de importancias
+            df_importancias = pd.DataFrame({
+                'Característica': features_nombres,
+                'Importancia': importancias
+            }).sort_values('Importancia', ascending=False).head(10)
+            
+            st.dataframe(df_importancias, use_container_width=True)
+            
+            st.caption("""
+            *Mayor importancia indica que la característica es más relevante 
+            para las predicciones del modelo.*
+            """)
+    
+    else:
+        st.warning(f"⚠️ Datos insuficientes para entrenamiento. Se necesitan al menos 100 registros, pero solo hay {len(df_modelo)}.")
+        st.info("""
+        Para realizar el entrenamiento, necesitamos más datos. 
+        Puedes:
+        1. Usar un dataset más grande
+        2. Reducir el número de características
+        3. Simplificar el modelo
+        """)
+
+st.markdown("---")
+st.caption("Parte 5 completada: Entrenamiento, evaluación y análisis de limitaciones")
