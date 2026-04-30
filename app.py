@@ -847,48 +847,297 @@ st.caption("🌌 Parte 7 completada: Fundamentos de computación cuántica aplic
 
 
 # ============================================
-# PARTE 8: DISEÑO DE INTERFACES
+# PARTE 8: DISEÑO DE INTERFAZ PARA LA CIUDADANÍA
 # ============================================
 
 st.markdown("---")
-st.header("🎨 PARTE 8: Diseño de Interfaces para la Ciudadanía")
+st.header("🗳️ PARTE 8: Sistema de Consulta Ciudadana")
 st.markdown("---")
 
-with st.expander("🖥️ Ver diseño de interfaz y User Flow", expanded=True):
-    
-    # 8.1 Diseño de interfaz en Streamlit
-    st.subheader("📱 8.1 Diseño de interfaz institucional")
-    
-    # Título institucional (ya está al inicio, pero lo reforzamos)
-    st.markdown("""
-    ### 🗳️ Interfaz para consulta ciudadana
-    
-    **Características implementadas:**
-    
-    | Elemento | Ubicación | Función |
-    |----------|-----------|---------|
-    | Logo ONPE | Sidebar superior | Identidad institucional |
-    | Título principal | Header central | Contexto de la app |
-    | Filtros dinámicos | Sidebar izquierdo | Selección región/candidato |
-    | Visualizaciones | Área principal | Resultados claros |
-    | Métricas | Tarjetas | Resumen rápido |
-    | Información complementaria | Expanders | Detalles bajo demanda |
-    """)
-    
-    # Demostración visual de los filtros ya existentes
-    st.subheader("🔍 Filtros implementados")
-    
-    st.markdown("""
-    ### Filtro por región (Departamento/Provincia)
-    
-    ```python
-    # Código implementado en la interfaz
-    departamento_seleccionado = st.sidebar.selectbox(
-        "Seleccionar Departamento:", 
-        ['Todos'] + sorted(df['DEPARTAMENTO'].unique())
+# 8.1 DISEÑO DE INTERFAZ EN STREAMLIT
+# ====================================
+
+# Título institucional (reforzado)
+st.markdown("""
+<div style='text-align: center; padding: 20px; background-color: #1E3A5F; border-radius: 10px; margin-bottom: 20px;'>
+    <h1 style='color: white; margin: 0;'>🇵🇪 Oficina Nacional de Procesos Electorales</h1>
+    <h2 style='color: #FFD700; margin: 0;'>Resultados Electorales 2006 - Primera Vuelta</h2>
+    <p style='color: white;'>Consulta ciudadana de resultados por mesa</p>
+</div>
+""", unsafe_allow_html=True)
+
+# 8.2 FILTROS POR REGIÓN O CANDIDATO
+# ====================================
+
+st.subheader("🔍 Filtros de búsqueda")
+
+# Organizar filtros en columnas
+col_filtro1, col_filtro2, col_filtro3 = st.columns(3)
+
+with col_filtro1:
+    # Filtro por región (Departamento)
+    departamentos = sorted(df['DEPARTAMENTO'].unique())
+    departamento_filtro = st.selectbox(
+        "📍 Seleccionar Departamento:",
+        ["Todos los departamentos"] + departamentos,
+        index=0
     )
+
+with col_filtro2:
+    # Filtro por provincia (dependiente del departamento)
+    if departamento_filtro != "Todos los departamentos":
+        provincias = sorted(df[df['DEPARTAMENTO'] == departamento_filtro]['PROVINCIA'].unique())
+        provincias = ["Todas las provincias"] + provincias
+    else:
+        provincias = ["Todas las provincias"] + sorted(df['PROVINCIA'].unique())
     
-    provincia_seleccionada = st.sidebar.selectbox(
-        "Seleccionar Provincia:", 
-        ['Todas'] + provincias_disponibles
-    )""")
+    provincia_filtro = st.selectbox(
+        "🏛️ Seleccionar Provincia:",
+        provincias,
+        index=0
+    )
+
+with col_filtro3:
+    # Filtro por candidato (específico)
+    opciones_candidato = [
+        "Ver todos los candidatos",
+        "Candidato 1 (P1)", "Candidato 2 (P2)", "Candidato 3 (P3)",
+        "Candidato 4 (P4)", "Candidato 5 (P5)", "Candidato 6 (P6)",
+        "Candidato 7 (P7)", "Candidato 8 (P8)", "Candidato 9 (P9)",
+        "Candidato 10 (P10)", "Candidato 11 (P11)", "Candidato 12 (P12)",
+        "Candidato 13 (P13)", "Candidato 14 (P14)", "Candidato 15 (P15)",
+        "Candidato 16 (P16)", "Candidato 17 (P17)", "Candidato 18 (P18)",
+        "Candidato 19 (P19)", "Candidato 20 (P20)"
+    ]
+    candidato_filtro = st.selectbox(
+        "🎯 Filtrar por Candidato:",
+        opciones_candidato,
+        index=0
+    )
+
+# Aplicar filtros a los datos
+df_filtrado = df.copy()
+
+# Aplicar filtro de departamento
+if departamento_filtro != "Todos los departamentos":
+    df_filtrado = df_filtrado[df_filtrado['DEPARTAMENTO'] == departamento_filtro]
+
+# Aplicar filtro de provincia
+if provincia_filtro != "Todas las provincias":
+    df_filtrado = df_filtrado[df_filtrado['PROVINCIA'] == provincia_filtro]
+
+# Mostrar resumen de filtros aplicados
+st.info(f"📊 Mostrando resultados para: **{departamento_filtro}** → **{provincia_filtro}** | Total de mesas: **{len(df_filtrado):,}**")
+
+# 8.3 VISUALIZACIÓN CLARA DE RESULTADOS
+# =======================================
+
+st.subheader("📊 Visualización de Resultados")
+
+# Crear pestañas para organizar la visualización
+tab1, tab2, tab3 = st.tabs(["📈 Resultados por Candidato", "🗺️ Distribución Regional", "📋 Detalle por Mesa"])
+
+with tab1:
+    # Resultados por candidato (filtrados por región)
+    st.write("### Votos por candidato")
+    
+    # Calcular votos para cada candidato
+    votos_candidatos = {}
+    for i in range(1, 21):
+        col_name = f'VOTOS_P{i}'
+        votos_candidatos[f'Candidato {i}'] = df_filtrado[col_name].sum()
+    
+    # Crear DataFrame para visualización
+    df_votos = pd.DataFrame(list(votos_candidatos.items()), columns=['Candidato', 'Votos'])
+    df_votos = df_votos.sort_values('Votos', ascending=False)
+    
+    # Si se filtró por candidato específico, destacarlo
+    if candidato_filtro != "Ver todos los candidatos":
+        num_candidato = int(candidato_filtro.split()[1])
+        col_destacada = f'Candidato {num_candidato}'
+        
+        # Mostrar solo el candidato seleccionado vs el resto
+        votos_seleccionado = df_votos[df_votos['Candidato'] == col_destacada]['Votos'].values[0]
+        votos_resto = df_votos[df_votos['Candidato'] != col_destacada]['Votos'].sum()
+        
+        import plotly.graph_objects as go
+        fig_destacado = go.Figure(data=[
+            go.Bar(name='Candidato Seleccionado', x=[col_destacada], y=[votos_seleccionado], marker_color='#FFD700'),
+            go.Bar(name='Otros Candidatos', x=['Otros'], y=[votos_resto], marker_color='#1E3A5F')
+        ])
+        fig_destacado.update_layout(title=f'Votos: {candidato_filtro} vs otros candidatos', showlegend=True)
+        st.plotly_chart(fig_destacado, use_container_width=True)
+        
+        # Porcentaje
+        total_votos = votos_seleccionado + votos_resto
+        porcentaje = (votos_seleccionado / total_votos * 100) if total_votos > 0 else 0
+        st.metric(f"📊 {candidato_filtro}", f"{votos_seleccionado:,} votos", f"{porcentaje:.1f}% del total")
+        
+    else:
+        # Mostrar top 10 candidatos
+        df_votos_top10 = df_votos.head(10)
+        
+        import plotly.express as px
+        fig_barras = px.bar(
+            df_votos_top10,
+            x='Candidato',
+            y='Votos',
+            title='Top 10 Candidatos más votados',
+            color='Votos',
+            color_continuous_scale='Blues',
+            text='Votos'
+        )
+        fig_barras.update_traces(texttemplate='%{text:,}', textposition='outside')
+        fig_barras.update_layout(xaxis_tickangle=-45)
+        st.plotly_chart(fig_barras, use_container_width=True)
+    
+    # Mostrar votos válidos, nulos y blancos
+    st.write("### Resumen de votos")
+    col_v1, col_v2, col_v3, col_v4 = st.columns(4)
+    
+    total_validos = df_filtrado[[f'VOTOS_P{i}' for i in range(1,21)]].sum().sum()
+    total_blanco = df_filtrado['VOTOS_VB'].sum()
+    total_nulos = df_filtrado['VOTOS_VN'].sum()
+    total_impugnados = df_filtrado['VOTOS_VI'].sum()
+    
+    with col_v1:
+        st.metric("✅ Votos Válidos", f"{total_validos:,}")
+    with col_v2:
+        st.metric("⬜ Votos en Blanco", f"{total_blanco:,}")
+    with col_v3:
+        st.metric("❌ Votos Nulos", f"{total_nulos:,}")
+    with col_v4:
+        st.metric("⚠️ Votos Impugnados", f"{total_impugnados:,}")
+
+with tab2:
+    st.write("### Distribución de votos por distrito")
+    
+    # Agrupar por distrito
+    votos_por_distrito = df_filtrado.groupby('DISTRITO')[[f'VOTOS_P{i}' for i in range(1,21)]].sum().sum(axis=1).reset_index()
+    votos_por_distrito.columns = ['Distrito', 'Total_Votos']
+    votos_por_distrito = votos_por_distrito.sort_values('Total_Votos', ascending=False).head(15)
+    
+    fig_distritos = px.bar(
+        votos_por_distrito,
+        x='Total_Votos',
+        y='Distrito',
+        title='Top 15 Distritos por votación',
+        orientation='h',
+        color='Total_Votos',
+        color_continuous_scale='Greens'
+    )
+    st.plotly_chart(fig_distritos, use_container_width=True)
+
+with tab3:
+    st.write("### Consulta de resultados por mesa")
+    
+    # Permitir búsqueda por número de mesa
+    if len(df_filtrado) > 0:
+        mesas_disponibles = sorted(df_filtrado['MESA_DE_VOTACION'].unique())
+        mesa_seleccionada = st.selectbox("Seleccionar número de mesa:", mesas_disponibles)
+        
+        # Mostrar detalles de la mesa seleccionada
+        mesa_data = df_filtrado[df_filtrado['MESA_DE_VOTACION'] == mesa_seleccionada].iloc[0]
+        
+        st.write(f"### 📋 Detalles de la Mesa {mesa_seleccionada}")
+        
+        col_m1, col_m2 = st.columns(2)
+        with col_m1:
+            st.write(f"**Ubicación:** {mesa_data['DISTRITO']} - {mesa_data['PROVINCIA']}")
+            st.write(f"**Electores hábiles:** {mesa_data['N_ELEC_HABIL']:,}")
+            st.write(f"**Estado del acta:** {mesa_data['DESCRIP_ESTADO_ACTA']}")
+        with col_m2:
+            st.write(f"**Total votos emitidos:** {mesa_data['N_CVAS']:,}")
+            st.write(f"**Votos válidos:** {sum([mesa_data[f'VOTOS_P{i}'] for i in range(1,21)]):,}")
+        
+        # Mostrar votos por candidato en esta mesa
+        st.write("#### Votos por candidato en esta mesa:")
+        votos_mesa = {}
+        for i in range(1, 21):
+            if mesa_data[f'VOTOS_P{i}'] > 0:
+                votos_mesa[f'Candidato {i}'] = mesa_data[f'VOTOS_P{i}']
+        
+        if votos_mesa:
+            df_mesa = pd.DataFrame(list(votos_mesa.items()), columns=['Candidato', 'Votos'])
+            st.dataframe(df_mesa, use_container_width=True, hide_index=True)
+        else:
+            st.info("No hay votos registrados para candidatos en esta mesa")
+    else:
+        st.warning("No hay mesas disponibles con los filtros seleccionados")
+
+# 8.4 USER FLOW Y SISTEMA DE INTERPRETACIÓN
+# ============================================
+
+st.subheader("🔄 User Flow: Selección → Visualización → Interpretación")
+
+# Mostrar el flujo visualmente
+st.markdown("""
+<div style='background-color: #f0f2f6; padding: 20px; border-radius: 10px; margin: 10px 0;'>
+    <h4 style='text-align: center;'>📋 Flujo de Consulta Ciudadana</h4>
+    <div style='display: flex; justify-content: space-around; text-align: center;'>
+        <div>
+            <span style='font-size: 40px;'>1️⃣</span><br>
+            <strong>📍 Selección de Región</strong><br>
+            <small>Elige departamento y provincia</small>
+        </div>
+        <div style='font-size: 30px;'>→</div>
+        <div>
+            <span style='font-size: 40px;'>2️⃣</span><br>
+            <strong>📊 Visualización</strong><br>
+            <small>Gráficos y métricas actualizadas</small>
+        </div>
+        <div style='font-size: 30px;'>→</div>
+        <div>
+            <span style='font-size: 40px;'>3️⃣</span><br>
+            <strong>💡 Interpretación</strong><br>
+            <small>Análisis automático de resultados</small>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# 8.5 INTERPRETACIÓN AUTOMÁTICA DE RESULTADOS
+# =============================================
+
+st.subheader("💡 Interpretación de Resultados")
+
+# Generar interpretación basada en los filtros aplicados
+votos_totales = df_filtrado[[f'VOTOS_P{i}' for i in range(1,21)]].sum()
+if len(votos_totales) > 0:
+    candidato_ganador_idx = votos_totales.argmax() + 1
+    candidato_ganador_votos = votos_totales.max()
+    total_votos_region = votos_totales.sum()
+    porcentaje_ganador = (candidato_ganador_votos / total_votos_region * 100) if total_votos_region > 0 else 0
+    
+    # Participación
+    total_electores = df_filtrado['N_ELEC_HABIL'].sum()
+    participacion = (df_filtrado['N_CVAS'].sum() / total_electores * 100) if total_electores > 0 else 0
+    
+    # Mostrar interpretación
+    st.markdown(f"""
+    <div style='background-color: #e8f4f8; padding: 15px; border-radius: 10px; border-left: 5px solid #1E3A5F;'>
+        <h4>📝 Análisis Electoral</h4>
+        <p><strong>📍 Región consultada:</strong> {departamento_filtro} {f' - {provincia_filtro}' if provincia_filtro != 'Todas las provincias' else ''}</p>
+        <p><strong>🏆 Candidato más votado:</strong> Candidato {candidato_ganador_idx} con <strong>{candidato_ganador_votos:,}</strong> votos (<strong>{porcentaje_ganador:.1f}%</strong>)</p>
+        <p><strong>📊 Participación electoral:</strong> {participacion:.1f}% de los electores hábiles emitieron voto</p>
+        <p><strong>✅ Votos válidos:</strong> {total_validos:,} | <strong>⬜ Votos en blanco:</strong> {total_blanco:,} | <strong>❌ Votos nulos:</strong> {total_nulos:,}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Interpretación adicional según contexto
+    if porcentaje_ganador > 50:
+        st.success(f"✅ **Mayoría absoluta:** El candidato ganador obtuvo más del 50% de votos en esta región, lo que indica un fuerte respaldo electoral.")
+    elif porcentaje_ganador > 30:
+        st.info(f"📊 **Mayoría relativa:** El candidato ganador lidera pero no tiene mayoría absoluta, lo que sugiere una contienda competitiva.")
+    else:
+        st.warning(f"⚠️ **Voto fragmentado:** El candidato ganador obtuvo menos del 30% de votos, indicando una distribución amplia entre múltiples candidatos.")
+    
+    if participacion < 50:
+        st.warning(f"📉 **Baja participación:** Solo {participacion:.1f}% de electores votaron, lo que podría indicar desinterés o problemas de acceso.")
+    elif participacion > 80:
+        st.success(f"📈 **Alta participación:** Excelente nivel de compromiso ciudadano en esta región.")
+else:
+    st.info("No hay datos de votos para los filtros seleccionados")
+
+st.markdown("---")
+st.caption("🗳️ ONPE - Sistema de Consulta Ciudadana | Datos oficiales Elecciones 2006")
