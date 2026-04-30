@@ -844,3 +844,51 @@ with st.expander("🔬 Ver análisis de Computación Cuántica", expanded=True):
 
 st.markdown("---")
 st.caption("🌌 Parte 7 completada: Fundamentos de computación cuántica aplicada a datos electorales")
+
+
+# ============================================
+# PARTE 8: DISEÑO DE INTERFACES
+# ============================================
+
+st.markdown("---")
+st.header("🎨 PARTE 8: Diseño de Interfaces para la Ciudadanía")
+st.markdown("---")
+
+with st.expander("🖥️ Ver diseño de interfaz y User Flow", expanded=True):
+    
+    # 8.1 Diseño de interfaz en Streamlit
+    st.subheader("📱 8.1 Diseño de interfaz institucional")
+    
+    # Título institucional (ya está al inicio, pero lo reforzamos)
+    st.markdown("""
+    ### 🗳️ Interfaz para consulta ciudadana
+    
+    **Características implementadas:**
+    
+    | Elemento | Ubicación | Función |
+    |----------|-----------|---------|
+    | Logo ONPE | Sidebar superior | Identidad institucional |
+    | Título principal | Header central | Contexto de la app |
+    | Filtros dinámicos | Sidebar izquierdo | Selección región/candidato |
+    | Visualizaciones | Área principal | Resultados claros |
+    | Métricas | Tarjetas | Resumen rápido |
+    | Información complementaria | Expanders | Detalles bajo demanda |
+    """)
+    
+    # Demostración visual de los filtros ya existentes
+    st.subheader("🔍 Filtros implementados")
+    
+    st.markdown("""
+    ### Filtro por región (Departamento/Provincia)
+    
+    ```python
+    # Código implementado en la interfaz
+    departamento_seleccionado = st.sidebar.selectbox(
+        "Seleccionar Departamento:", 
+        ['Todos'] + sorted(df['DEPARTAMENTO'].unique())
+    )
+    
+    provincia_seleccionada = st.sidebar.selectbox(
+        "Seleccionar Provincia:", 
+        ['Todas'] + provincias_disponibles
+    )""")
